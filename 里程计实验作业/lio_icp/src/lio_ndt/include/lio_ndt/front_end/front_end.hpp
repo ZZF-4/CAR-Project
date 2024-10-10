@@ -45,7 +45,7 @@ namespace lio_ndt
         pcl::VoxelGrid<CloudData::POINT> display_filter_;
         pcl::NormalDistributionsTransform<CloudData::POINT, CloudData::POINT>::Ptr ndt_ptr_;
         //pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> ::Ptr icp;
-        //OptimizedICPGN icp_opti;
+        OptimizedICPGN icp_opti;
         
         std::deque<Frame> local_map_frames_;
         std::deque<Frame> global_map_frames_;
