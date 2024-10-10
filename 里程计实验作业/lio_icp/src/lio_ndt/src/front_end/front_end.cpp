@@ -147,7 +147,9 @@ namespace lio_ndt
             CloudData::CLOUD_PTR filtered_local_map_ptr(new CloudData::CLOUD());
             local_map_filter_.setInputCloud(local_map_ptr_);
             local_map_filter_.filter(*filtered_local_map_ptr);
-            icp_opti.SetTargetCloud(filtered_local_map_ptr);
+            //icp_opti.SetTargetCloud(filtered_local_map_ptr);
+            ndt_ptr_->setInputTarget(filtered_local_map_ptr);
+            //  icp->setInputTarget(filtered_local_map_ptr);
         }
         
         // 更新全局地图
