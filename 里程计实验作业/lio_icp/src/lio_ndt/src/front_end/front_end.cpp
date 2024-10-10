@@ -80,7 +80,7 @@ namespace lio_ndt
         // current_frame_.pose = icp->getFinalTransformation();
         // std::cout << "icp score: " << icp->getFitnessScore() << std::endl;
 
-        
+
         // 此处采用运动模型来做位姿预测（当然也可以用IMU）更新相邻两帧的相对运动
         step_pose = last_pose.inverse() * current_frame_.pose;
         predict_pose = current_frame_.pose * step_pose;
@@ -138,7 +138,9 @@ namespace lio_ndt
         // 更新匹配的目标点云
         if (local_map_frames_.size() < 10) // 如果局部地图数量少于10个，直接设置为目标点云
         {
-            icp_opti.SetTargetCloud(local_map_ptr_);
+            //icp_opti.SetTargetCloud(local_map_ptr_);
+            ndt_ptr_->setInputTarget(local_map_ptr_);
+            //  icp->setInputTarget(local_map_ptr_);
         }
         else // 否则，先对局部地图进行下采样，再加进去
         {
