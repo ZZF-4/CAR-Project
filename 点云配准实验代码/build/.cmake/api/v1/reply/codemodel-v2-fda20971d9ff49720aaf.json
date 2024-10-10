@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "optimized_icp",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ndt_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ndt_test-Debug-349382a76ccee8c6a57f.json",
+					"name" : "ndt_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "optimized_icp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-optimized_icp-Debug-22f0cd26e84d774c96de.json",
+					"name" : "optimized_icp",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/luoweiao/\u4f5c\u4e1a/\u70b9\u4e91\u914d\u51c6\u5b9e\u9a8c\u4ee3\u7801/build",
+		"source" : "/home/luoweiao/\u4f5c\u4e1a/\u70b9\u4e91\u914d\u51c6\u5b9e\u9a8c\u4ee3\u7801"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}
