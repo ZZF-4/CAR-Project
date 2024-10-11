@@ -1,0 +1,2 @@
+lio_ndt
+-DCATKIN_DEVEL_PREFIX=/home/hawkbot/作业/里程计实验作业/lio_icp/devel -DCMAKE_INSTALL_PREFIX=/home/hawkbot/作业/里程计实验作业/lio_icp/install -G Unix Makefiles
