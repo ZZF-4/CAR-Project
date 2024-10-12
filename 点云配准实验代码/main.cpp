@@ -52,18 +52,18 @@ int main()
     // =======================   optimized icp   =======================
 
     // =======================   svd icp   =======================
-    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp_svd;
-    icp_svd.setInputTarget(cloud_target_ptr);
-    icp_svd.setInputSource(cloud_source_ptr);
-    icp_svd.setMaxCorrespondenceDistance(0.3);
-    icp_svd.setMaximumIterations(30);
-    icp_svd.setEuclideanFitnessEpsilon(1e-4);
-    icp_svd.setTransformationEpsilon(1e-4);
-    icp_svd.align(*cloud_source_svd_transformed_ptr, T_predict);
+    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp_svd; //声明了一个ICP配准对象icp_svd
+    icp_svd.setInputTarget(cloud_target_ptr); //包含x、y、z坐标
+    icp_svd.setInputSource(cloud_source_ptr);//设置ICP算法的目标点云，进行变换以匹配目标点云的数据
+    icp_svd.setMaxCorrespondenceDistance(0.3);//设置最大对应距离
+    icp_svd.setMaximumIterations(30);//设置为30次迭代
+    icp_svd.setEuclideanFitnessEpsilon(1e-4);//设置欧几里得拟合度阈值
+    icp_svd.setTransformationEpsilon(1e-4);//设置变换矩阵的变化阈值
+    icp_svd.align(*cloud_source_svd_transformed_ptr, T_predict);//将结果存储在cloud_source_svd_transformed_ptr指向的点云中
     std::cout << "\n============== SVD ICP =================" << std::endl;
-    std::cout << "T final: \n"
-              << icp_svd.getFinalTransformation() << std::endl;
-    std::cout << "fitness score: " << icp_svd.getFitnessScore() << std::endl;
+    std::cout << "T final: \n"//控制台输出一行文本，表示ICP配准过程的开始
+              << icp_svd.getFinalTransformation() << std::endl;//输出ICP算法最终计算得到的变换矩阵
+    std::cout << "fitness score: " << icp_svd.getFitnessScore() << std::endl;//输出ICP算法的拟合度分数
     // =======================   svd icp   =======================
 
     // 可视化
