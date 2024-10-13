@@ -50,3 +50,6 @@ target_link_libraries(front_end_node ${catkin_LIBRARIES} ${ALL_TARGET_LIBRARIES}
 
 add_executable(save_odom_node src/save_odom_node.cpp)
 target_link_libraries(save_odom_node ${catkin_LIBRARIES})
+
+add_executable(xiaoche_lidar_bag_node src/xiaoche_lidar_bag_node.cpp)
+target_link_libraries(xiaoche_lidar_bag_node ${catkin_LIBRARIES})
