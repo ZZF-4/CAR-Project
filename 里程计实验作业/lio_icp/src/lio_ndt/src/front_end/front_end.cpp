@@ -7,7 +7,9 @@
 namespace lio_ndt
 {
     FrontEnd::FrontEnd() : // icp_opti(OptimizedICPGN()),
-                           icp(pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ>()),
+                           //icp(pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ>()),
+                             ndt_ptr_(new pcl::NormalDistributionsTransform<CloudData::POINT, CloudData::POINT>()),
+
                            local_map_ptr_(new CloudData::CLOUD()),
                            global_map_ptr_(new CloudData::CLOUD()),
                            result_cloud_ptr_(new CloudData::CLOUD())
@@ -16,10 +18,16 @@ namespace lio_ndt
         // icp_opti.SetMaxCorrespondDistance(1);
         // icp_opti.SetMaxIterations(2);
         // icp_opti.SetTransformationEpsilon(0.5);
-        icp.setMaxCorrespondenceDistance(1.0);
-        icp.setMaximumIterations(2);
-        icp.setEuclideanFitnessEpsilon(0.00000001);
-        icp.setTransformationEpsilon(0.005);
+        
+        ndt_ptr_->setResolution(2.0);
+        ndt_ptr_->setStepSize(0.1);
+        ndt_ptr_->setTransformationEpsilon(0.1);
+        ndt_ptr_->setMaximumIterations(2);
+
+        // icp.setMaxCorrespondenceDistance(1.0);
+        // icp.setMaximumIterations(2);
+        // icp.setEuclideanFitnessEpsilon(0.00000001);
+        // icp.setTransformationEpsilon(0.005);
         cloud_filter_.setLeafSize(1.5f, 1.5f, 1.5f);
         local_map_filter_.setLeafSize(1.0f, 1.0f, 1.0f);
         display_filter_.setLeafSize(1.0f, 1.0f, 1.0f);
@@ -55,8 +63,10 @@ namespace lio_ndt
         // icp_opti.Match(filtered_cloud_ptr, predict_pose, result_cloud_ptr_, current_frame_.pose);
         // std::cout << "fitness score:" << icp_opti.GetFitnessScore() << std::endl;
 
-        icp.setInputSource(filtered_cloud_ptr);
-        icp.align(*result_cloud_ptr_, predict_pose);
+        // icp.setInputSource(filtered_cloud_ptr);
+        // icp.align(*result_cloud_ptr_, predict_pose);
+        ndt_ptr_->setInputSource(filtered_cloud_ptr);             // 要匹配的点云
+        ndt_ptr_->align(*result_cloud_ptr_, predict_pose);        // 点云配准，变换后的点云在result中
         current_frame_.pose = icp.getFinalTransformation();
         std::cout << "icp score: " << icp.getFitnessScore() << std::endl;
 
@@ -119,7 +129,8 @@ namespace lio_ndt
         if (local_map_frames_.size() < 10) // 如果局部地图数量少于10个，直接设置为目标点云
         {
             // icp_opti.SetTargetCloud(local_map_ptr_);
-            icp.setInputTarget(local_map_ptr_);
+            ndt_ptr_->setInputTarget(local_map_ptr_);
+            //icp.setInputTarget(local_map_ptr_);
         }
         else // 否则，先对局部地图进行下采样，再加进去
         {
@@ -127,7 +138,8 @@ namespace lio_ndt
             local_map_filter_.setInputCloud(local_map_ptr_);
             local_map_filter_.filter(*filtered_local_map_ptr);
             // icp_opti.SetTargetCloud(filtered_local_map_ptr);
-            icp.setInputTarget(filtered_local_map_ptr);
+            ndt_ptr_->setInputTarget(filtered_local_map_ptr);
+            //icp.setInputTarget(filtered_local_map_ptr);
         }
 
         // 更新全局地图
