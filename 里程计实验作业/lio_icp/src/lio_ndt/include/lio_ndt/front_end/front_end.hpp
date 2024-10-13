@@ -26,17 +26,17 @@ namespace lio_ndt
 
     public:
         FrontEnd();
-        
-        Eigen::Matrix4f Update(const CloudData& cloud_data);
-        bool SetInitPose(const Eigen::Matrix4f& init_pose);
-        bool SetPredictPose(const Eigen::Matrix4f& predict_pose);
 
-        bool GetNewLocalMap(CloudData::CLOUD_PTR& local_map_ptr);
-        bool GetNewGlobalMap(CloudData::CLOUD_PTR& global_map_ptr);
-        bool GetCurrentScan(CloudData::CLOUD_PTR& current_scan_ptr);
+        Eigen::Matrix4f Update(const CloudData &cloud_data);
+        bool SetInitPose(const Eigen::Matrix4f &init_pose);
+        bool SetPredictPose(const Eigen::Matrix4f &predict_pose);
+
+        bool GetNewLocalMap(CloudData::CLOUD_PTR &local_map_ptr);
+        bool GetNewGlobalMap(CloudData::CLOUD_PTR &global_map_ptr);
+        bool GetCurrentScan(CloudData::CLOUD_PTR &current_scan_ptr);
 
     private:
-        void UpdateNewFrame(const Frame& new_key_frame);
+        void UpdateNewFrame(const Frame &new_key_frame);
 
     private:
         // 变量
@@ -44,9 +44,9 @@ namespace lio_ndt
         pcl::VoxelGrid<CloudData::POINT> local_map_filter_;
         pcl::VoxelGrid<CloudData::POINT> display_filter_;
         // pcl::NormalDistributionsTransform<CloudData::POINT, CloudData::POINT>::Ptr ndt_ptr_;
-        // pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+        pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
         OptimizedICPGN icp_opti;
-        
+
         std::deque<Frame> local_map_frames_;
         std::deque<Frame> global_map_frames_;
 

@@ -6,22 +6,27 @@
 
 namespace lio_ndt
 {
-    FrontEnd::FrontEnd():icp_opti(OptimizedICPGN()),
-                         local_map_ptr_(new CloudData::CLOUD()),
-                         global_map_ptr_(new CloudData::CLOUD()),
-                         result_cloud_ptr_(new CloudData::CLOUD())
-        {
-            // 设置默认参数，以免类的使用者在匹配之前忘了设置参数
-            icp_opti.SetMaxCorrespondDistance(1);
-            icp_opti.SetMaxIterations(2);
-            icp_opti.SetTransformationEpsilon(0.5);
-            cloud_filter_.setLeafSize(1.5f,1.5f,1.5f);
-            local_map_filter_.setLeafSize(1.0f,1.0f,1.0f);
-            display_filter_.setLeafSize(1.0f,1.0f,1.0f); 
-        }
-    
+    FrontEnd::FrontEnd() : // icp_opti(OptimizedICPGN()),
+                           icp(pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ>()),
+                           local_map_ptr_(new CloudData::CLOUD()),
+                           global_map_ptr_(new CloudData::CLOUD()),
+                           result_cloud_ptr_(new CloudData::CLOUD())
+    {
+        // 设置默认参数，以免类的使用者在匹配之前忘了设置参数
+        // icp_opti.SetMaxCorrespondDistance(1);
+        // icp_opti.SetMaxIterations(2);
+        // icp_opti.SetTransformationEpsilon(0.5);
+        icp.setMaxCorrespondenceDistance(1.0);
+        icp.setMaximumIterations(2);
+        icp.setEuclideanFitnessEpsilon(0.00000001);
+        icp.setTransformationEpsilon(0.005);
+        cloud_filter_.setLeafSize(1.5f, 1.5f, 1.5f);
+        local_map_filter_.setLeafSize(1.0f, 1.0f, 1.0f);
+        display_filter_.setLeafSize(1.0f, 1.0f, 1.0f);
+    }
+
     // 输入当前帧扫描的点云图，对位姿进行更新
-    Eigen::Matrix4f FrontEnd::Update(const CloudData& cloud_data)
+    Eigen::Matrix4f FrontEnd::Update(const CloudData &cloud_data)
     {
         // 参数初始化
         current_frame_.cloud_data.time = cloud_data.time;
@@ -40,16 +45,20 @@ namespace lio_ndt
 
         // 局部地图容器中没有关键帧，代表是第一帧数据
         // 此时把当前帧数据作为第一帧，并更新局部地图容器和全局地图容器
-        if(local_map_frames_.size() == 0)
+        if (local_map_frames_.size() == 0)
         {
             current_frame_.pose = init_pose_;
             UpdateNewFrame(current_frame_);
             return current_frame_.pose;
         }
         // 不是第一帧，就正常匹配
-        icp_opti.Match(filtered_cloud_ptr,predict_pose,result_cloud_ptr_,current_frame_.pose);
-        std::cout<<"fitness score:"<<icp_opti.GetFitnessScore()<<std::endl;
-        
+        // icp_opti.Match(filtered_cloud_ptr, predict_pose, result_cloud_ptr_, current_frame_.pose);
+        // std::cout << "fitness score:" << icp_opti.GetFitnessScore() << std::endl;
+
+        icp.setInputSource(filtered_cloud_ptr);
+        icp.align(*result_cloud_ptr_, predict_pose);
+        current_frame_.pose = icp.getFinalTransformation();
+        std::cout << "icp score: " << icp.getFitnessScore() << std::endl;
 
         // 此处采用运动模型来做位姿预测（当然也可以用IMU）更新相邻两帧的相对运动
         step_pose = last_pose.inverse() * current_frame_.pose;
@@ -57,9 +66,10 @@ namespace lio_ndt
         last_pose = current_frame_.pose;
 
         // 匹配之后根据距离判断是否需要生成新的关键帧，如果需要，则做相应更新
-        if (fabs(last_key_frame_pose(0,3) - current_frame_.pose(0,3)) + 
-            fabs(last_key_frame_pose(1,3) - current_frame_.pose(1,3)) +
-            fabs(last_key_frame_pose(2,3) - current_frame_.pose(2,3)) > 2.0) 
+        if (fabs(last_key_frame_pose(0, 3) - current_frame_.pose(0, 3)) +
+                fabs(last_key_frame_pose(1, 3) - current_frame_.pose(1, 3)) +
+                fabs(last_key_frame_pose(2, 3) - current_frame_.pose(2, 3)) >
+            2.0)
         {
             UpdateNewFrame(current_frame_);
             last_key_frame_pose = current_frame_.pose;
@@ -68,19 +78,19 @@ namespace lio_ndt
         return current_frame_.pose;
     }
 
-    bool FrontEnd::SetInitPose(const Eigen::Matrix4f& init_pose)
+    bool FrontEnd::SetInitPose(const Eigen::Matrix4f &init_pose)
     {
         init_pose_ = init_pose;
         return true;
     }
 
-    bool FrontEnd::SetPredictPose(const Eigen::Matrix4f& predict_pose)
+    bool FrontEnd::SetPredictPose(const Eigen::Matrix4f &predict_pose)
     {
         predict_pose_ = predict_pose;
         return true;
     }
-    
-    void FrontEnd::UpdateNewFrame(const Frame& new_key_frame)
+
+    void FrontEnd::UpdateNewFrame(const Frame &new_key_frame)
     {
         Frame key_frame = new_key_frame;
         // 这一步的目的是为了把关键帧的点云保存下来。由于用的是共享指针，所以只是直接复制了一个指针而已
@@ -95,9 +105,9 @@ namespace lio_ndt
             local_map_frames_.pop_front();
         }
         local_map_ptr_.reset(new CloudData::CLOUD()); // 更新局部地图指针
-        
+
         // 遍历滑窗
-        for(size_t i = 0; i < local_map_frames_.size(); ++i)
+        for (size_t i = 0; i < local_map_frames_.size(); ++i)
         {
             // 恢复下采样的点云数据，参数：输入，输出，估计的姿态
             pcl::transformPointCloud(*local_map_frames_.at(i).cloud_data.cloud_ptr, *transformed_cloud_ptr, local_map_frames_.at(i).pose);
@@ -108,26 +118,28 @@ namespace lio_ndt
         // 更新匹配的目标点云
         if (local_map_frames_.size() < 10) // 如果局部地图数量少于10个，直接设置为目标点云
         {
-            icp_opti.SetTargetCloud(local_map_ptr_);
+            // icp_opti.SetTargetCloud(local_map_ptr_);
+            icp.setInputTarget(local_map_ptr_);
         }
         else // 否则，先对局部地图进行下采样，再加进去
         {
             CloudData::CLOUD_PTR filtered_local_map_ptr(new CloudData::CLOUD());
             local_map_filter_.setInputCloud(local_map_ptr_);
             local_map_filter_.filter(*filtered_local_map_ptr);
-            icp_opti.SetTargetCloud(filtered_local_map_ptr);
+            // icp_opti.SetTargetCloud(filtered_local_map_ptr);
+            icp.setInputTarget(filtered_local_map_ptr);
         }
-        
+
         // 更新全局地图
         global_map_frames_.push_back(key_frame);
-        if(global_map_frames_.size() % 100 != 0)
+        if (global_map_frames_.size() % 100 != 0)
         {
             return;
         }
         else
         {
             global_map_ptr_.reset(new CloudData::CLOUD());
-            for(size_t i = 0; i < global_map_frames_.size(); ++i)
+            for (size_t i = 0; i < global_map_frames_.size(); ++i)
             {
                 pcl::transformPointCloud(*global_map_frames_.at(i).cloud_data.cloud_ptr, *transformed_cloud_ptr, global_map_frames_.at(i).pose);
                 *global_map_ptr_ += *transformed_cloud_ptr;
@@ -136,7 +148,7 @@ namespace lio_ndt
         }
     }
 
-    bool FrontEnd::GetNewLocalMap(CloudData::CLOUD_PTR& local_map_ptr)
+    bool FrontEnd::GetNewLocalMap(CloudData::CLOUD_PTR &local_map_ptr)
     {
         if (has_new_local_map_)
         {
@@ -147,7 +159,7 @@ namespace lio_ndt
         return false;
     }
 
-    bool FrontEnd::GetNewGlobalMap(CloudData::CLOUD_PTR& global_map_ptr)
+    bool FrontEnd::GetNewGlobalMap(CloudData::CLOUD_PTR &global_map_ptr)
     {
         if (has_new_global_map_)
         {
@@ -155,10 +167,10 @@ namespace lio_ndt
             display_filter_.filter(*global_map_ptr);
             return true;
         }
-        return false;  
+        return false;
     }
 
-    bool FrontEnd::GetCurrentScan(CloudData::CLOUD_PTR& current_scan_ptr)
+    bool FrontEnd::GetCurrentScan(CloudData::CLOUD_PTR &current_scan_ptr)
     {
         display_filter_.setInputCloud(result_cloud_ptr_);
         display_filter_.filter(*current_scan_ptr);
