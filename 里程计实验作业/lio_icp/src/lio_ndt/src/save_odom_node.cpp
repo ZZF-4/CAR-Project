@@ -14,8 +14,9 @@ void laserOdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
                      << msg->pose.pose.orientation.x << " " << msg->pose.pose.orientation.y << " " << msg->pose.pose.orientation.z << " "
                      << msg->pose.pose.orientation.w << " "
                      << msg->twist.twist.linear.x << " " << msg->twist.twist.linear.y << " " << msg->twist.twist.linear.z << " "
-                     << msg->twist.twist.angular.x << " " << msg->twist.twist.angular.y << " " << msg->twist.twist.angular.z << std::endl;
+                     << msg->twist.twist.angular.x << " " << msg->twist.twist.angular.y <<std::endl; // " " << msg->twist.twist.angular.z << 
 }
+
 
 // 回调函数处理gnss数据
 //void gnssCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
